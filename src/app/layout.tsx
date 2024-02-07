@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Red_Hat_Display } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/providers/Providers";
+import { cn } from "@/lib/utils";
+import Navbar from "@/components/layout/navbar";
+import Layout from "@/components/providers/Layout";
 
-const inter = Inter({ subsets: ["latin"] });
+const redHatDisplay = Red_Hat_Display({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -17,8 +20,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <Providers>{children}</Providers>
+      <body className={cn(redHatDisplay.className, "min-h-screen")}>
+        <Providers>
+          <Layout>{children}</Layout>
+        </Providers>
       </body>
     </html>
   );

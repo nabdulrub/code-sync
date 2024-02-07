@@ -1,19 +1,21 @@
-import { SignInUser, SigninSchema } from "@/types/SignInUser";
-import bcrypt from "bcrypt";
-import { db } from "../../../../prisma";
+import { db } from "@/db";
+import authService from "@/services/authService";
+import { SigninSchema } from "@/types/sign-in";
 import { RequestInternal } from "next-auth";
+
+const auth = authService();
 
 export default async function signInUserCredentials(
   credentials: any,
   req: Pick<RequestInternal, "body" | "method" | "query" | "headers">
 ) {
-  const { email, password } = SigninSchema.parse(credentials);
+  const { username, password } = SigninSchema.parse(credentials);
 
-  if (!credentials || !email || !password) return null;
+  if (!credentials || !password) return null;
 
   try {
     const verifyUser = await db.user.findFirst({
-      where: { email },
+      where: { username },
     });
 
     if (!verifyUser) {
@@ -22,7 +24,7 @@ export default async function signInUserCredentials(
 
     const hashedPassword = verifyUser.password || "";
 
-    const isPasswordCorrect = await bcrypt.compare(password, hashedPassword);
+    const isPasswordCorrect = auth.comparePassword(password, hashedPassword);
 
     console.log(isPasswordCorrect);
 
@@ -30,8 +32,7 @@ export default async function signInUserCredentials(
       return {
         id: verifyUser.id,
         email: verifyUser.email,
-        name: verifyUser.name,
-        phone: verifyUser.phoneNumber,
+        username: verifyUser.username,
       };
     }
 

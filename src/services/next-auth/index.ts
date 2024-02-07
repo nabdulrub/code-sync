@@ -7,24 +7,22 @@ import {
 } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { db } from "../../../prisma";
-import { SignInUser, SigninSchema } from "@/types/SignInUser";
+import { db } from "@/db";
+import { SignInUser, SigninSchema } from "@/types/sign-in";
 import signInUserCredentials from "./providers/credentials";
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
-      name: string;
       email: string;
-      phone: string;
+      username: string;
     };
   }
   interface User {
     id: string;
-    name: string;
     email: string;
-    phone: string;
+    username: string;
   }
 }
 
@@ -32,8 +30,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     email: string;
-    name: string;
-    phone: string;
+    username: string;
   }
 }
 
@@ -55,15 +52,13 @@ export const authOptions: NextAuthOptions = {
     jwt: async ({ token, user, trigger, session }) => {
       if (trigger === "update") {
         token.email = session.email;
-        token.name = session.name;
-        token.phone = session.phone;
+        token.username = session.username;
       }
 
       if (user) {
         token.id = user.id;
         token.email = user.email;
-        token.name = user.name;
-        token.phone = user.phone;
+        token.username = user.username;
       }
       return token;
     },
@@ -72,8 +67,7 @@ export const authOptions: NextAuthOptions = {
       if (token) {
         session.user.id = token.id;
         session.user.email = token.email;
-        session.user.name = token.name;
-        session.user.phone = token.phone;
+        session.user.username = token.username;
       }
       return session;
     },
@@ -81,7 +75,7 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   jwt: { secret: process.env.NEXTAUTH_JWT },
   pages: {
-    signIn: "/auth",
+    signIn: "/signin",
     signOut: "/",
     error: "/",
   },
