@@ -11,10 +11,29 @@ datasource db {
 }
 
 model User {
-  id        String  @id @default(cuid())
-  firstname String?
-  lastname  String?
-  username  String  @unique
-  email     String  @unique
-  password  String
+  id                 String               @id @default(cuid())
+  firstname          String?
+  lastname           String?
+  username           String               @unique
+  email              String               @unique
+  password           String
+  environments       Environment[]
+  EnvironmentEditors EnvironmentEditors[]
+}
+
+model Environment {
+  id        String               @id @default(cuid())
+  name      String
+  language  String
+  creator   User?                @relation(fields: [creatorId], references: [id])
+  creatorId String
+  editors   EnvironmentEditors[]
+}
+
+model EnvironmentEditors {
+  id            String      @id @default(cuid())
+  editor        User        @relation(fields: [editorId], references: [id])
+  editorId      String
+  environment   Environment @relation(fields: [environmentId], references: [id])
+  environmentId String
 }

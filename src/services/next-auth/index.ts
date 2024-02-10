@@ -1,14 +1,7 @@
-import bcrypt from "bcrypt";
-import {
-  DefaultSession,
-  NextAuthOptions,
-  User,
-  getServerSession,
-} from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { db } from "@/db";
-import { SignInUser, SigninSchema } from "@/types/sign-in";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { DefaultSession, NextAuthOptions, getServerSession } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 import signInUserCredentials from "./providers/credentials";
 
 declare module "next-auth" {
@@ -44,7 +37,7 @@ export const authOptions: NextAuthOptions = {
       name: "credentials",
       credentials: {},
       async authorize(credentials, req) {
-        return signInUserCredentials(credentials, req);
+        return signInUserCredentials(credentials);
       },
     }),
   ],

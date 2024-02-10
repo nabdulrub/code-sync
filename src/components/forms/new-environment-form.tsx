@@ -17,19 +17,34 @@ import { createUser } from "@/server-actions/user";
 import { Input } from "../ui/input";
 import { serverActionHandler } from "@/utils/serverActionHandler";
 import { useRouter } from "next/navigation";
+import {
+  LANGUAGE_OPTIONS as languageOptions,
+  NewEnvironment,
+  NewEnvironmentSchema,
+} from "@/types/environment";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { createEnvironment } from "@/server-actions/environment";
+import { useEnvironmentListContext } from "@/context/EnvironmentListProvider";
 
-type Props = {};
+type Props = {
+  closeModal: () => void;
+};
 
-const RegisterForm = (props: Props) => {
+const NewEnvironmentForm = ({ closeModal }: Props) => {
+  const { refetch } = useEnvironmentListContext();
   const [error, setError] = useState<string | undefined>(undefined);
   const router = useRouter();
-  const form = useForm<RegisterUser>({
-    resolver: zodResolver(RegisterSchema),
+  const form = useForm<NewEnvironment>({
+    resolver: zodResolver(NewEnvironmentSchema),
     defaultValues: {
-      email: "",
-      username: "",
-      password: "",
-      verifyPassword: "",
+      name: "",
+      language: undefined,
     },
   });
 
@@ -40,13 +55,14 @@ const RegisterForm = (props: Props) => {
     formState: { isSubmitting },
   } = form;
 
-  const onSubmit = async (data: RegisterUser) => {
+  const onSubmit = async (data: NewEnvironment) => {
     await serverActionHandler({
       preAction: () => setError(undefined),
-      serverAction: () => createUser(data),
+      serverAction: () => createEnvironment(data),
       onSuccess: () => {
         reset();
-        router.push("/");
+        closeModal();
+        refetch();
       },
       onFail: (error) => setError(error),
     });
@@ -55,19 +71,15 @@ const RegisterForm = (props: Props) => {
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className=" w-full">
-        <div className="grid gap-2">
-          <p className="font-bold text-theme-purple">Register</p>
-          <h3 className="text-2xl">Create an Account</h3>
-        </div>
         <div className="grid md:grid-cols-2 gap-8 mt-4 ">
           <FormField
             control={control}
-            name="email"
+            name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input {...field} type="email" />
+                  <Input {...field} type="name" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -75,38 +87,27 @@ const RegisterForm = (props: Props) => {
           />
           <FormField
             control={control}
-            name="username"
+            name="language"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>Language</FormLabel>
                 <FormControl>
-                  <Input {...field} type="username" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input {...field} type="password" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="verifyPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Verify Password</FormLabel>
-                <FormControl>
-                  <Input {...field} type="password" />
+                  <Select {...field} onValueChange={field.onChange}>
+                    <SelectTrigger className="capitalize">
+                      <SelectValue placeholder="Language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {languageOptions.map((language, index) => (
+                        <SelectItem
+                          key={index}
+                          className="capitalize"
+                          value={language}
+                        >
+                          {language}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -115,11 +116,11 @@ const RegisterForm = (props: Props) => {
         </div>
         {error && <p className="text-destructive font-sm mt-4">{error}</p>}
         <Button className="w-full mt-4" disabled={isSubmitting}>
-          {isSubmitting ? "Getting you started..." : "Register"}
+          {isSubmitting ? "Creating Enviornment..." : "Create"}
         </Button>
       </form>
     </Form>
   );
 };
 
-export default RegisterForm;
+export default NewEnvironmentForm;

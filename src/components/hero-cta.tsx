@@ -1,6 +1,6 @@
 import React from "react";
-import RegisterButton from "./auth/RegisterButton";
-import SignInButton from "./auth/SignInButton";
+import RegisterButton from "./auth/register-button";
+import SignInButton from "./auth/sign-in-button";
 import NewFeature from "./new-feature";
 
 type Props = {};

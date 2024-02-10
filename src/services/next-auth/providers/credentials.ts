@@ -5,10 +5,7 @@ import { RequestInternal } from "next-auth";
 
 const auth = authService();
 
-export default async function signInUserCredentials(
-  credentials: any,
-  req: Pick<RequestInternal, "body" | "method" | "query" | "headers">
-) {
+export default async function signInUserCredentials(credentials: any) {
   const { username, password } = SigninSchema.parse(credentials);
 
   if (!credentials || !password) return null;
@@ -25,8 +22,6 @@ export default async function signInUserCredentials(
     const hashedPassword = verifyUser.password || "";
 
     const isPasswordCorrect = auth.comparePassword(password, hashedPassword);
-
-    console.log(isPasswordCorrect);
 
     if (isPasswordCorrect) {
       return {

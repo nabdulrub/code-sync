@@ -18,19 +18,22 @@ const size_variants = {
 
 type Props = {
   size?: keyof typeof size_variants;
+  className?: string;
+  short?: boolean;
 };
 
-const Logo = ({ size = "sm" }: Props) => {
+const Logo = ({ size = "sm", className, short }: Props) => {
   return (
     <Link href={"/"}>
       <div
         className={cn(
           orbitron.className,
           size_variants[size],
-          "text-xl font-black"
+          "text-xl font-black",
+          className
         )}
       >
-        CodeSync
+        {short ? "CS" : "CodeSync"}
       </div>
     </Link>
   );
