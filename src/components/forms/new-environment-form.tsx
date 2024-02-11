@@ -9,19 +9,18 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { RegisterSchema, RegisterUser } from "@/types/register";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { createUser } from "@/server-actions/user";
-import { Input } from "../ui/input";
-import { serverActionHandler } from "@/utils/serverActionHandler";
-import { useRouter } from "next/navigation";
+import { useGetOwnedEnvironments } from "@/data/useGetOwedEnvironments";
+import { createEnvironment } from "@/server/actions/environment";
 import {
-  LANGUAGE_OPTIONS as languageOptions,
   NewEnvironment,
   NewEnvironmentSchema,
+  LANGUAGE_OPTIONS as languageOptions,
 } from "@/types/environment";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAction } from "next-safe-action/hooks";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Input } from "../ui/input";
 import {
   Select,
   SelectContent,
@@ -29,17 +28,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { createEnvironment } from "@/server-actions/environment";
-import { useEnvironmentListContext } from "@/context/EnvironmentListProvider";
+import showToast from "@/utils/showToast";
 
 type Props = {
   closeModal: () => void;
 };
 
 const NewEnvironmentForm = ({ closeModal }: Props) => {
-  const { refetch } = useEnvironmentListContext();
+  const { refetch } = useGetOwnedEnvironments();
   const [error, setError] = useState<string | undefined>(undefined);
-  const router = useRouter();
   const form = useForm<NewEnvironment>({
     resolver: zodResolver(NewEnvironmentSchema),
     defaultValues: {
@@ -48,32 +45,35 @@ const NewEnvironmentForm = ({ closeModal }: Props) => {
     },
   });
 
-  const {
-    handleSubmit,
-    control,
-    reset,
-    formState: { isSubmitting },
-  } = form;
+  const { execute, status } = useAction(createEnvironment, {
+    onSuccess: () => {
+      form.reset();
+      closeModal();
+      refetch();
+      showToast({
+        message: "Created environment successfully",
+        variant: "success",
+      });
+    },
+    onError: (error) => {
+      setError(error.serverError);
+      showToast({
+        message: "Failed to create environment",
+        variant: "error",
+      });
+    },
+  });
 
   const onSubmit = async (data: NewEnvironment) => {
-    await serverActionHandler({
-      preAction: () => setError(undefined),
-      serverAction: () => createEnvironment(data),
-      onSuccess: () => {
-        reset();
-        closeModal();
-        refetch();
-      },
-      onFail: (error) => setError(error),
-    });
+    execute(data);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(onSubmit)} className=" w-full">
+      <form onSubmit={form.handleSubmit(onSubmit)} className=" w-full">
         <div className="grid md:grid-cols-2 gap-8 mt-4 ">
           <FormField
-            control={control}
+            control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
@@ -86,7 +86,7 @@ const NewEnvironmentForm = ({ closeModal }: Props) => {
             )}
           />
           <FormField
-            control={control}
+            control={form.control}
             name="language"
             render={({ field }) => (
               <FormItem>
@@ -115,8 +115,8 @@ const NewEnvironmentForm = ({ closeModal }: Props) => {
           />
         </div>
         {error && <p className="text-destructive font-sm mt-4">{error}</p>}
-        <Button className="w-full mt-4" disabled={isSubmitting}>
-          {isSubmitting ? "Creating Enviornment..." : "Create"}
+        <Button className="w-full mt-4" disabled={status === "executing"}>
+          {status === "executing" ? "Creating Enviornment..." : "Create"}
         </Button>
       </form>
     </Form>

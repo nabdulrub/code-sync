@@ -1,6 +1,13 @@
 import { z } from "zod";
 
-export const LANGUAGE_OPTIONS = ["javascript", "typescript"] as const;
+export const LANGUAGE_OPTIONS = [
+  "javascript",
+  "typescript",
+  "python",
+  "java",
+  "csharp",
+  "php",
+] as const;
 
 export const NewEnvironmentSchema = z.object({
   name: z.string(),
@@ -8,3 +15,10 @@ export const NewEnvironmentSchema = z.object({
 });
 
 export type NewEnvironment = z.infer<typeof NewEnvironmentSchema>;
+
+export const RenameEnvironmentSchema = z.object({
+  name: z.string(),
+  id: z.string(),
+});
+
+export type RenameEnvironment = z.infer<typeof RenameEnvironmentSchema>;

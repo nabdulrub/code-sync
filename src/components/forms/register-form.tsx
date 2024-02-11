@@ -9,20 +9,20 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { createUser } from "@/server/actions/user";
 import { RegisterSchema, RegisterUser } from "@/types/register";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { signIn } from "next-auth/react";
+import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { createUser } from "@/server-actions/user";
 import { Input } from "../ui/input";
-import { serverActionHandler } from "@/utils/serverActionHandler";
-import { useRouter } from "next/navigation";
+import showToast from "@/utils/showToast";
 
 type Props = {};
 
 const RegisterForm = (props: Props) => {
   const [error, setError] = useState<string | undefined>(undefined);
-  const router = useRouter();
   const form = useForm<RegisterUser>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
@@ -33,35 +33,42 @@ const RegisterForm = (props: Props) => {
     },
   });
 
-  const {
-    handleSubmit,
-    control,
-    reset,
-    formState: { isSubmitting },
-  } = form;
+  const { execute, status } = useAction(createUser, {
+    onSuccess: async (_, input) => {
+      await signIn("credentials", {
+        username: input.username,
+        password: input.password,
+      });
+      form.reset();
+      showToast({
+        message: "Signed in as " + input.username,
+        variant: "success",
+      });
+    },
+    onError: (error) => {
+      setError(error.serverError);
+      showToast({
+        message: "Failed to register user",
+        variant: "error",
+      });
+    },
+  });
 
   const onSubmit = async (data: RegisterUser) => {
-    await serverActionHandler({
-      preAction: () => setError(undefined),
-      serverAction: () => createUser(data),
-      onSuccess: () => {
-        reset();
-        router.push("/");
-      },
-      onFail: (error) => setError(error),
-    });
+    setError(undefined);
+    execute(data);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(onSubmit)} className=" w-full">
+      <form onSubmit={form.handleSubmit(onSubmit)} className=" w-full">
         <div className="grid gap-2">
           <p className="font-bold text-theme-purple">Register</p>
           <h3 className="text-2xl">Create an Account</h3>
         </div>
         <div className="grid md:grid-cols-2 gap-8 mt-4 ">
           <FormField
-            control={control}
+            control={form.control}
             name="email"
             render={({ field }) => (
               <FormItem>
@@ -74,7 +81,7 @@ const RegisterForm = (props: Props) => {
             )}
           />
           <FormField
-            control={control}
+            control={form.control}
             name="username"
             render={({ field }) => (
               <FormItem>
@@ -87,7 +94,7 @@ const RegisterForm = (props: Props) => {
             )}
           />
           <FormField
-            control={control}
+            control={form.control}
             name="password"
             render={({ field }) => (
               <FormItem>
@@ -100,7 +107,7 @@ const RegisterForm = (props: Props) => {
             )}
           />
           <FormField
-            control={control}
+            control={form.control}
             name="verifyPassword"
             render={({ field }) => (
               <FormItem>
@@ -114,8 +121,8 @@ const RegisterForm = (props: Props) => {
           />
         </div>
         {error && <p className="text-destructive font-sm mt-4">{error}</p>}
-        <Button className="w-full mt-4" disabled={isSubmitting}>
-          {isSubmitting ? "Getting you started..." : "Register"}
+        <Button className="w-full mt-4" disabled={status === "executing"}>
+          {status === "executing" ? "Getting you started..." : "Register"}
         </Button>
       </form>
     </Form>

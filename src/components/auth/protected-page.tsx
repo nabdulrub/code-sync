@@ -1,4 +1,4 @@
-import protectServerPage from "@/services/next-auth/protectServerPage";
+import protectServerPage from "@/server/utils/protectServerPage";
 import React from "react";
 
 type Props = {
@@ -7,7 +7,8 @@ type Props = {
 };
 
 const ProtectedPage = async ({ children, redirectTo = "/" }: Props) => {
-  const session = await protectServerPage({ redirectTo });
+  // Protected page function
+  await protectServerPage({ redirectTo });
 
   return <>{children}</>;
 };

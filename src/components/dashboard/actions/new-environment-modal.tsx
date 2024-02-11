@@ -31,8 +31,8 @@ const NewEnvironmentModal = (props: Props) => {
         <DialogHeader>
           <DialogTitle>Create a new environment</DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
+            Get started with a new environment by giving it a name and selecting
+            its compiled language.
           </DialogDescription>
         </DialogHeader>
         <NewEnvironmentForm closeModal={closeModal} />

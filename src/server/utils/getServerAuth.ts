@@ -1,5 +1,5 @@
 import { Session, getServerSession } from "next-auth";
-import { authOptions } from ".";
+import { authOptions } from "../authentication";
 
 export default async function getServerAuth(): Promise<{
   session: Session;

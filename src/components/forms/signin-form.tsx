@@ -17,6 +17,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Logo from "../brand/logo";
 import { Input } from "../ui/input";
+import showToast from "@/utils/showToast";
 
 type Props = {};
 
@@ -50,6 +51,10 @@ const SignInForm = (props: Props) => {
       if (result?.ok) {
         reset();
         router.push("/dashboard");
+        showToast({
+          message: "Signed in as " + data.username,
+          variant: "success",
+        });
       }
 
       if (!result?.ok) {
@@ -57,6 +62,10 @@ const SignInForm = (props: Props) => {
       }
     } catch (error) {
       setError("Something went wrong");
+      showToast({
+        message: "Failed to sign in user",
+        variant: "error",
+      });
     }
   };
 

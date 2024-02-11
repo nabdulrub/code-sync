@@ -1,16 +1,23 @@
 "use client";
 
-import { useEnvironmentListContext } from "@/context/EnvironmentListProvider";
-import { getAllOwnedEnvironments } from "@/server-actions/environment";
-import { serverActionHandler } from "@/utils/serverActionHandler";
-import React from "react";
+import Title from "@/components/ui/title";
+import { useGetOwnedEnvironments } from "@/data/useGetOwedEnvironments";
+import EnvironmentCard from "../environment/environment-card";
 
 type Props = {};
 
 const OwnedEnvironments = (props: Props) => {
-  const { environments, isLoading } = useEnvironmentListContext();
+  const { data: environments } = useGetOwnedEnvironments();
+
   return (
-    <div>{isLoading ? <p>Loading..</p> : JSON.stringify(environments)}</div>
+    <div className="px-8 mt-4">
+      <Title strong>Your Environments</Title>
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-3">
+        {environments?.map((environment) => (
+          <EnvironmentCard environment={environment} key={environment.id} />
+        ))}
+      </div>
+    </div>
   );
 };
 

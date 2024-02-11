@@ -1,11 +1,11 @@
+import Layout from "@/components/providers/Layout";
+import Providers from "@/components/providers/Providers";
+import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
+import getServerAuth from "@/server/utils/getServerAuth";
 import type { Metadata } from "next";
 import { Red_Hat_Display } from "next/font/google";
 import "./globals.css";
-import Providers from "@/components/providers/Providers";
-import { cn } from "@/lib/utils";
-import Navbar from "@/components/layout/navbar";
-import Layout from "@/components/providers/Layout";
-import getServerAuth from "@/services/next-auth/getServerAuth";
 
 const redHatDisplay = Red_Hat_Display({ subsets: ["latin"] });
 
@@ -27,6 +27,7 @@ export default async function RootLayout({
       <body className={cn(redHatDisplay.className, "min-h-screen")}>
         <Providers session={session}>
           <Layout session={session}>{children}</Layout>
+          <Toaster />
         </Providers>
       </body>
     </html>

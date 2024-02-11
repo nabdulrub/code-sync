@@ -19,15 +19,22 @@ model User {
   password           String
   environments       Environment[]
   EnvironmentEditors EnvironmentEditors[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  invites            Int?                 @default(0)
 }
 
 model Environment {
-  id        String               @id @default(cuid())
-  name      String
-  language  String
-  creator   User?                @relation(fields: [creatorId], references: [id])
-  creatorId String
-  editors   EnvironmentEditors[]
+  id          String               @id @default(cuid())
+  name        String
+  language    String
+  creator     User?                @relation(fields: [creatorId], references: [id])
+  creatorId   String
+  editors     EnvironmentEditors[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  last_opened DateTime?
+  code        String?
 }
 
 model EnvironmentEditors {

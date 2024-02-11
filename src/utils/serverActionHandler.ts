@@ -25,7 +25,7 @@ export async function serverActionHandler<T = any>(
   const result = await serverAction();
 
   if (result.success) {
-    onSuccess && onSuccess(result.data);
+    onSuccess && (await onSuccess(result.data));
   }
 
   if (!result.success) {

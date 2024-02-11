@@ -1,6 +1,6 @@
 import ProtectedPage from "@/components/auth/protected-page";
 import DashboardSideNavbar from "@/components/dashboard/dashboard-side-navbar";
-import DashboardProvider from "@/components/providers/dashboard-provider";
+import DashboardQueryProvider from "@/components/providers/dashboard-query-provider";
 
 export default async function Layout({
   children,
@@ -9,12 +9,12 @@ export default async function Layout({
 }) {
   return (
     <ProtectedPage>
-      <DashboardProvider>
+      <DashboardQueryProvider>
         <div className="flex">
           <DashboardSideNavbar />
-          {children}
+          <div className="w-full max-h-[830px]">{children}</div>
         </div>
-      </DashboardProvider>
+      </DashboardQueryProvider>
     </ProtectedPage>
   );
 }

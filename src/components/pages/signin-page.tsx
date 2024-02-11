@@ -22,9 +22,9 @@ const SignInPage = (props: Props) => {
           <SignInForm />
         </div>
         <p>
-          Already signed up?
-          <Link href="/signin" className="text-blue-400 font-semibold ml-2">
-            Sign In
+          Don&apos;t have an account?
+          <Link href="/register" className="text-blue-400 font-semibold ml-2">
+            Register Now
           </Link>
         </p>
       </div>
