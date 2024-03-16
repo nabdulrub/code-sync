@@ -1,4 +1,7 @@
-import { getAllOwnedEnvironments } from "@/server/actions/environment";
+import {
+  getAllJoinedEnvironments,
+  getAllOwnedEnvironments,
+} from "@/server/actions/environment";
 import {
   HydrationBoundary,
   QueryClient,
@@ -14,8 +17,13 @@ const EnvironmentListStore = async ({ children }: Props) => {
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery({
-    queryKey: ["environments"],
+    queryKey: ["owned-environments"],
     queryFn: async () => getAllOwnedEnvironments(),
+  });
+
+  await queryClient.prefetchQuery({
+    queryKey: ["joined-environments"],
+    queryFn: async () => getAllJoinedEnvironments(),
   });
 
   return (

@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 
 export function useGetOwnedEnvironments() {
   return useQuery({
-    queryKey: ["environments"],
+    queryKey: ["owned-environments"],
     queryFn: async () => getAllOwnedEnvironments(),
+    refetchInterval: 604800000,
   });
 }

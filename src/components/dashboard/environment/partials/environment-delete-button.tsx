@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { HookActionStatus } from "next-safe-action/hooks";
 import { HTMLAttributes } from "react";
 
@@ -9,9 +10,14 @@ interface DeleteButtonProps extends HTMLAttributes<HTMLButtonElement> {
 
 const EnvironmentDeleteButton = ({ onClick, status }: DeleteButtonProps) => {
   return (
-    <button onClick={onClick} disabled={status === "executing"}>
+    <Button
+      onClick={onClick}
+      disabled={status === "executing"}
+      className="pl-2 rounded-sm w-full justify-start"
+      variant={"destructive"}
+    >
       Delete
-    </button>
+    </Button>
   );
 };
 

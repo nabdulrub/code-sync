@@ -1,35 +1,65 @@
 "use client";
 
 import Loader from "@/components/Loader";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import Title from "@/components/ui/title";
-import { useGetOwnedEnvironments } from "@/data/useGetOwedEnvironments";
+import { useGetJoinedEnvironments } from "@/data/useGetJoinedEnvironments";
+import { useGetOwnedEnvironments } from "@/data/useGetOwnedEnvironments";
 import { cn } from "@/lib/utils";
-import { deleteEnvironment } from "@/server/actions/environment";
+import {
+  EnvironmentWithEditors,
+  deleteEnvironment as deleteEnvironmentAction,
+  leaveEnvironment as leaveEnvironmentAction,
+  updateEnvironmentOpenedDate,
+} from "@/server/actions/environment";
+import { LanguageOptions } from "@/types/environment";
 import showToast from "@/utils/showToast";
-import { Environment } from "@prisma/client";
-import { EyeIcon, EyeOff } from "lucide-react";
+import { VariantProps, cva } from "class-variance-authority";
 import { useAction } from "next-safe-action/hooks";
-import EnvironmentCardOptions from "./environment-card-options";
 import { useRouter } from "next/navigation";
+import EnvironmentCardEditors from "./environment-card-editors";
+import EnvironmentCardOptions from "./environment-card-options";
+import EnvironmentLanguageBadge from "./partials/environment-language-badge";
+import EnvironmentOpenedBadge from "./partials/environment-opened-badge";
 
-type EnvironmentCardProps = {
-  environment: Environment;
+const cardVariants = cva(
+  "md:max-w-[450px] rounded-lg relative pt-8 border-2 border-white cursor-pointer",
+  {
+    variants: {
+      variant: {
+        default:
+          "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        outline:
+          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+);
+
+type EnvironmentCardProps = VariantProps<typeof cardVariants> & {
+  environment: EnvironmentWithEditors;
 };
-
-const EnvironmentCard = ({ environment }: EnvironmentCardProps) => {
-  const { refetch } = useGetOwnedEnvironments();
-  const { name, language, last_opened } = environment;
+const EnvironmentCard = ({ environment, variant }: EnvironmentCardProps) => {
+  const { refetch: updateOwnedEnvironments } = useGetOwnedEnvironments();
+  const { refetch: updateJoinedEnvironments } = useGetJoinedEnvironments();
   const router = useRouter();
 
-  const { status, execute } = useAction(deleteEnvironment, {
-    onSuccess: () => {
+  const { name, language, last_opened } = environment;
+
+  const deleteEnvironment = useAction(deleteEnvironmentAction, {
+    onSuccess: async () => {
+      await updateOwnedEnvironments();
       showToast({
         message: "Environment deleted!",
         variant: "success",
       });
-      refetch();
     },
     onError: () => {
       showToast({
@@ -39,46 +69,73 @@ const EnvironmentCard = ({ environment }: EnvironmentCardProps) => {
     },
   });
 
+  const leaveEnvironment = useAction(leaveEnvironmentAction, {
+    onSuccess: async () => {
+      await updateJoinedEnvironments();
+      showToast({
+        message: "Left Environment!",
+        variant: "success",
+      });
+    },
+    onError: () => {
+      showToast({
+        message: "Failed to leave environment",
+        variant: "error",
+      });
+    },
+  });
+
+  const updateOpenDate = useAction(updateEnvironmentOpenedDate);
+
+  const handleEnvironmentOpened = (id: string) => {
+    updateOpenDate.execute({ id });
+    router.push(`/dashboard/environment/${environment.id}`);
+  };
+
+  const isVariantSecondary = variant === "secondary" ? "default" : "secondary";
+
   return (
     <div className="relative">
       <Card
-        className={cn(
-          "bg-primary md:max-w-[450px] rounded-lg relative pt-8 border-2 border-white cursor-pointer",
-          { "blur-[5px]": status === "executing" }
-        )}
+        className={cn(cardVariants({ variant }), {
+          "blur-[5px]": deleteEnvironment.status === "executing",
+        })}
+        onClick={() => handleEnvironmentOpened(environment.id)}
       >
-        <CardContent
-          className="grid gap-2 "
-          onClick={() =>
-            router.push(`/dashboard/environment/${environment.id}`)
-          }
-        >
+        <CardContent className="grid gap-2 ">
           <Title size="xs" className="font-medium">
             {name}
           </Title>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <Badge variant={"secondary"} className="flex gap-2 items-center">
-                {last_opened ? last_opened.toLocaleDateString() : "Unopened"}
-                {last_opened ? (
-                  <EyeIcon className="w-4 h-4 " />
-                ) : (
-                  <EyeOff className="w-4 h-4 " />
-                )}
-              </Badge>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex gap-4">
+              <EnvironmentOpenedBadge
+                lastOpened={last_opened}
+                variant={isVariantSecondary}
+              />
+              <EnvironmentLanguageBadge
+                language={language as LanguageOptions}
+                variant={isVariantSecondary}
+              />
             </div>
-            <Badge variant={"secondary"} className="capitalize">
-              {language}
-            </Badge>
+            {environment.editors.length > 1 && (
+              <EnvironmentCardEditors editors={environment.editors} />
+            )}
           </div>
         </CardContent>
-        <EnvironmentCardOptions
-          deleteRecord={execute}
-          environment={environment}
-          status={status}
-        />
       </Card>
-      <Loader show={status === "executing"} />
+      <EnvironmentCardOptions
+        deleteEnvironment={deleteEnvironment.execute}
+        deleteStatus={deleteEnvironment.status}
+        leaveEnvironment={leaveEnvironment.execute}
+        leaveStatus={leaveEnvironment.status}
+        environment={environment}
+      />
+      <Loader
+        show={
+          deleteEnvironment.status === "executing" ||
+          leaveEnvironment.status === "executing"
+        }
+      />
     </div>
   );
 };

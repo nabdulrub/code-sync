@@ -1,7 +1,6 @@
 "use client";
 
 import InvitetoAppForm from "@/components/forms/invite-to-app-form";
-import NewEnvironmentForm from "@/components/forms/new-environment-form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,21 +10,29 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Send } from "lucide-react";
-import React, { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Send } from "lucide-react";
+import { useState } from "react";
 
-type Props = {};
+type Props = {
+  option?: boolean;
+};
 
-const InviteUserModal = (props: Props) => {
+const InviteUserModal = ({ option }: Props) => {
   const [open, setOpen] = useState(false);
 
   const closeModal = () => setOpen(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button variant={"secondary"}>
-          Invite a Friend <Send className="w-4 h-4 ml-1" />
+      <DialogTrigger className="w-full flex justify-start">
+        <Button
+          variant={option ? "ghost" : "secondary"}
+          className={cn("w-fit", {
+            "pl-2 rounded-sm w-full justify-start": option,
+          })}
+        >
+          Invite a Friend {!option && <Send className="w-4 h-4 ml-1" />}
         </Button>
       </DialogTrigger>
       <DialogContent>

@@ -9,7 +9,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useGetOwnedEnvironments } from "@/data/useGetOwedEnvironments";
+import { useGetOwnedEnvironments } from "@/data/useGetOwnedEnvironments";
 import { createEnvironment } from "@/server/actions/environment";
 import {
   NewEnvironment,

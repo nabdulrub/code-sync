@@ -9,14 +9,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useGetOwnedEnvironments } from "@/data/useGetOwnedEnvironments";
-import { renameEnvironment } from "@/server/actions/environment";
-import {
-  RenameEnvironment,
-  RenameEnvironmentSchema,
-} from "@/types/environment";
+import useGetEnvironmentSession from "@/data/useGetEnvironmentSession";
+import { sendUserEnvironmentInvite } from "@/server/actions/invitiations";
+import { InviteToEnvironment, InviteToEnvironmentSchema } from "@/types/invite";
 import showToast from "@/utils/showToast";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useSession } from "next-auth/react";
 import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -24,40 +22,49 @@ import { Input } from "../ui/input";
 
 type Props = {
   closeModal: () => void;
-  id: string;
+  environmentId?: string;
+  creatorId?: string;
 };
 
-const RenameEnvironmentForm = ({ closeModal, id }: Props) => {
-  const { refetch } = useGetOwnedEnvironments();
+const InviteToEnvironmentForm = ({
+  closeModal,
+  environmentId,
+  creatorId,
+}: Props) => {
+  const { data: environment } = useGetEnvironmentSession();
   const [error, setError] = useState<string | undefined>(undefined);
-  const form = useForm<RenameEnvironment>({
-    resolver: zodResolver(RenameEnvironmentSchema),
+  const form = useForm<InviteToEnvironment>({
+    resolver: zodResolver(InviteToEnvironmentSchema),
     defaultValues: {
-      name: "",
-      id,
+      username: "",
+      environmentId: environment?.data?.id
+        ? environment.data.id
+        : environmentId,
+      creatorId: environment?.data?.creatorId
+        ? environment.data.creatorId
+        : creatorId,
     },
   });
 
-  const { execute, status } = useAction(renameEnvironment, {
-    onSuccess: () => {
+  const { execute, status } = useAction(sendUserEnvironmentInvite, {
+    onSuccess: (_, input) => {
       form.reset();
       closeModal();
-      refetch();
       showToast({
-        message: "Renamed environment successfully",
+        message: "Invite sent to " + input.username,
         variant: "success",
       });
     },
     onError: (error) => {
       setError(error.serverError);
       showToast({
-        message: "Failed to rename environment",
+        message: "Failed to send invite",
         variant: "error",
       });
     },
   });
 
-  const onSubmit = async (data: RenameEnvironment) => {
+  const onSubmit = async (data: InviteToEnvironment) => {
     execute(data);
   };
 
@@ -67,12 +74,12 @@ const RenameEnvironmentForm = ({ closeModal, id }: Props) => {
         <div className="flex flex-col items-center justify-center w-full">
           <FormField
             control={form.control}
-            name="name"
+            name="username"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>New Name</FormLabel>
+                <FormLabel>Username</FormLabel>
                 <FormControl>
-                  <Input {...field} type="name" />
+                  <Input {...field} type="username" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -80,7 +87,7 @@ const RenameEnvironmentForm = ({ closeModal, id }: Props) => {
           />
           {error && <p className="text-destructive font-sm mt-4">{error}</p>}
           <Button className="w-full mt-4" disabled={status === "executing"}>
-            {status === "executing" ? "Saving..." : "Save changes"}
+            {status === "executing" ? "Sending invite..." : "Invite"}
           </Button>
         </div>
       </form>
@@ -88,4 +95,4 @@ const RenameEnvironmentForm = ({ closeModal, id }: Props) => {
   );
 };
 
-export default RenameEnvironmentForm;
+export default InviteToEnvironmentForm;

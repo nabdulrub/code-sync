@@ -9,7 +9,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { sendInviteEmail } from "@/server/actions/user";
+import { sendInviteEmail } from "@/server/actions/invitiations";
 import { Invite, InviteSchema } from "@/types/invite";
 import showToast from "@/utils/showToast";
 import { zodResolver } from "@hookform/resolvers/zod";

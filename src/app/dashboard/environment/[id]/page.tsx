@@ -1,11 +1,8 @@
 import EnvironmentPage from "@/components/pages/environment-page";
-import React from "react";
 
-type Props = {
-  params: { id: string };
-};
+type Props = {};
 
-const Environment = ({ params: { id } }: Props) => {
+const Environment = (props: Props) => {
   return <EnvironmentPage />;
 };
 

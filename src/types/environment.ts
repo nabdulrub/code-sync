@@ -9,6 +9,14 @@ export const LANGUAGE_OPTIONS = [
   "php",
 ] as const;
 
+export type LanguageOptions =
+  | "javascript"
+  | "typescript"
+  | "python"
+  | "java"
+  | "csharp"
+  | "php";
+
 export const NewEnvironmentSchema = z.object({
   name: z.string(),
   language: z.enum(LANGUAGE_OPTIONS),

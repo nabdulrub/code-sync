@@ -1,6 +1,7 @@
 import ProtectedPage from "@/components/auth/protected-page";
-import EnvironmentNavbar from "@/components/dashboard/environment/environment-navbar";
-import { getEnvironmentById } from "@/server/actions/environment";
+import EnvironmentNavbar from "@/components/dashboard/environment/navbar/environment-navbar";
+import { EnvironmentJoinStoreProvider } from "@/store/environment-join-store";
+import EnvironmentSessionStore from "@/store/environment-session.store";
 
 export default async function Layout({
   children,
@@ -9,12 +10,14 @@ export default async function Layout({
   children: React.ReactNode;
   params: { id: string };
 }) {
-  const environment = await getEnvironmentById({ id });
-
   return (
     <ProtectedPage>
-      <EnvironmentNavbar environment={environment.data} />
-      {children}
+      <EnvironmentSessionStore environmentId={id}>
+        <EnvironmentJoinStoreProvider>
+          <EnvironmentNavbar />
+          {children}
+        </EnvironmentJoinStoreProvider>
+      </EnvironmentSessionStore>
     </ProtectedPage>
   );
 }

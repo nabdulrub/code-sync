@@ -1,7 +1,7 @@
 "use client";
 
 import Title from "@/components/ui/title";
-import { useGetOwnedEnvironments } from "@/data/useGetOwedEnvironments";
+import { useGetOwnedEnvironments } from "@/data/useGetOwnedEnvironments";
 import EnvironmentCard from "../environment/environment-card";
 
 type Props = {};
